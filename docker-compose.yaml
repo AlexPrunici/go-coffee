@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  app:
+    build: .
+    container_name: go_coffee
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    container_name: go_coffee_db
+    restart: always
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD:
+      POSTGRES_DB: go_coffee
+    ports:
+      - "5432:5432"
