@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -35,11 +34,10 @@ func (coffeeShop *CoffeeShop) orderCoffeeController(context *gin.Context) {
 		coffeeType = requestBody.CoffeeType
 	}
 	currentTime := time.Now()
-	
+
 	userID, isIDValid := isValidUserID(userIdBody)
 	if !isIDValid {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid UserID"})
-		log.Fatalf("UserID: %v", userID)
 		return
 	}
 
@@ -48,13 +46,13 @@ func (coffeeShop *CoffeeShop) orderCoffeeController(context *gin.Context) {
 		return
 	}
 
-    if !isValidCoffeeType(coffeeType) {
+	if !isValidCoffeeType(coffeeType) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid coffee type"})
 		return
 	}
 
 	coffeeQuota, found := coffeeShop.getMembershipCoffeeQuota(membershipType, coffeeType)
-	
+
 	if !found {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Quota not found"})
 	}
@@ -69,25 +67,25 @@ func (coffeeShop *CoffeeShop) orderCoffeeController(context *gin.Context) {
 			waitTime = 0
 		}
 
-		context.JSON(http.StatusTooManyRequests, gin.H{"error": fmt.Sprintf("Limit exceded. Wait %.0f minutes", waitTime.Minutes())} )
+		context.JSON(http.StatusTooManyRequests, gin.H{"error": fmt.Sprintf("Limit exceded. Wait %.0f minutes", waitTime.Minutes())})
 		return
 	}
 
 	orderRequest := OrderRequest{
-		UserID:    userID,
-		CoffeeType:    coffeeType,
-		Timestamp: currentTime,
+		UserID:     userID,
+		CoffeeType: coffeeType,
+		Timestamp:  currentTime,
 	}
 
 	coffeeShop.DB.Create(&orderRequest)
 	context.JSON(http.StatusOK, gin.H{"success": "Order created with success"})
 }
 
-func (coffeShop *CoffeeShop) countUserOrders(userID int, coffeeType string, quotaDuration int) (int64) {
+func (coffeeShop *CoffeeShop) countUserOrders(userID int, coffeeType string, quotaDuration int) int64 {
 	duration := time.Now().Add(-time.Duration(quotaDuration) * time.Minute)
 
 	var count int64
-	coffeShop.DB.Model(&OrderRequest{}).Where("user_id = ? AND coffee_type = ? AND timestamp > ?", userID, coffeeType, duration).Count(&count)
+	coffeeShop.DB.Model(&OrderRequest{}).Where("user_id = ? AND coffee_type = ? AND timestamp > ?", userID, coffeeType, duration).Count(&count)
 
 	return count
 }
@@ -123,7 +121,7 @@ func isValidUserID(userID string) (int, bool) {
 }
 
 func isValidMembershipType(membershipType string) bool {
-	return membershipType == "Basic"  || membershipType == "Coffee Lover" || membershipType == "Americano Maniac"
+	return membershipType == "Basic" || membershipType == "Coffee Lover" || membershipType == "Americano Maniac"
 }
 
 func isValidCoffeeType(coffeeType string) bool {
