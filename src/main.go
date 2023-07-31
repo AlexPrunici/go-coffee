@@ -1,13 +1,21 @@
 package main
 
 import (
-	"log"
-
 	"github.com/gin-gonic/gin"
+	"log"
 )
 
 func main() {
-	db := initDB()
+	config, err := readConfigFromEnv()
+	if err != nil {
+		log.Fatalf("Error reading configuration: %v", err)
+	}
+
+	db, err := initDB(config)
+	if err != nil {
+		log.Fatalf("Error initializing database: %v", err)
+	}
+
 	quotas := getCoffeeQuotas()
 
 	coffeeShop := &CoffeeShop{

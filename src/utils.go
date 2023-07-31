@@ -1,24 +1,50 @@
 package main
 
 import (
-	"log"
-
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"os"
+	"strconv"
 )
 
-func initDB() *gorm.DB {
-	dsn := "host=go_coffee_db user=postgres dbname=go_coffee port=5432 sslmode=disable"
+type DBConfig struct {
+	Host    string
+	User    string
+	DBName  string
+	Port    int
+	SSLMode string
+}
+
+func readConfigFromEnv() (*DBConfig, error) {
+	portStr := os.Getenv("DB_PORT")
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid port number: %s", portStr)
+	}
+
+	return &DBConfig{
+		Host:    os.Getenv("DB_HOST"),
+		User:    os.Getenv("DB_USER"),
+		DBName:  os.Getenv("DB_NAME"),
+		Port:    port,
+		SSLMode: os.Getenv("DB_SSLMODE"),
+	}, nil
+}
+
+func initDB(config *DBConfig) (*gorm.DB, error) {
+	dsn := fmt.Sprintf("host=%s user=%s dbname=%s port=%d sslmode=%s",
+		config.Host, config.User, config.DBName, config.Port, config.SSLMode)
+
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		log.Fatalf("Error: %v", err)
+		return nil, fmt.Errorf("failed to initialize the database: %w", err)
 	}
 
 	db.AutoMigrate(&OrderRequest{})
-
-	return db
+	return db, nil
 }
 
 func getCoffeeQuotas() Membership {
