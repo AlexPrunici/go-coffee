@@ -71,7 +71,11 @@ func (coffeeShop *CoffeeShop) orderCoffeeController(context *gin.Context) {
 		}
 		waitTime := lastUsage.Add(time.Duration(coffeeQuota.Duration) * time.Minute).Sub(currentTime)
 
-		context.JSON(http.StatusTooManyRequests, gin.H{"error": fmt.Sprintf("Limit exceded. Wait %.0f minutes", waitTime.Minutes())})
+		waitHours := int(waitTime.Hours())
+		waitMinutes := int(waitTime.Minutes()) % 60
+		waitSeconds := int(waitTime.Seconds()) % 60
+
+		context.JSON(http.StatusTooManyRequests, gin.H{"error": fmt.Sprintf("Limit exceded. Time to wait: %d:%d:%d", waitHours, waitMinutes, waitSeconds)})
 		return
 	}
 
