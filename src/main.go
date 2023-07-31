@@ -20,7 +20,7 @@ func main() {
 
 	coffeeShop := &CoffeeShop{
 		DB:     db,
-		Quotas: quotas,
+		Quotas: &quotas,
 	}
 
 	router := gin.Default()
