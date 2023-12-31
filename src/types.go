@@ -17,7 +17,7 @@ type Membership struct {
 
 type CoffeeShop struct {
 	DB     *gorm.DB
-	Quotas Membership
+	Quotas *Membership
 }
 
 type OrderCoffeeRequestBody struct {
